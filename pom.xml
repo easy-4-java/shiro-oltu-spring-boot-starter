@@ -548,13 +548,13 @@
         <dependency>
             <groupId>org.apache.oltu.oauth2</groupId>
             <artifactId>org.apache.oltu.oauth2.client</artifactId>
-            <version>${oltu.version}</version>
+            <version>${oltu.oauth2.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.oltu.oauth2/org.apache.oltu.oauth2.httpclient4 -->
         <dependency>
             <groupId>org.apache.oltu.oauth2</groupId>
             <artifactId>org.apache.oltu.oauth2.httpclient4</artifactId>
-            <version>${oltu.version}</version>
+            <version>${oltu.oauth2.version}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/win.zqxu.shiro/shiro-oltu -->
