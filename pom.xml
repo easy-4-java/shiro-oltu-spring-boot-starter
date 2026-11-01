@@ -63,7 +63,7 @@
         <oltu.version>1.0.2</oltu.version>
         <shiro-oltu.version>1.0</shiro-oltu.version>
         <slf4j.version>2.0.18</slf4j.version>
-        <spring-boot-starter-shiro-biz.version>4.1.x.20260630-SNAPSHOT</spring-boot-starter-shiro-biz.version>
+        <shiro-extension-spring-boot-starter.version>4.1.x.20260630-SNAPSHOT</shiro-extension-spring-boot-starter.version>
         <!-- Maven Plugin Dependencies -->
         <maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
         <maven-central-publishing-plugin.version>0.11.0</maven-central-publishing-plugin.version>
@@ -199,11 +199,11 @@
             <version>${shiro-oltu.version}</version>
         </dependency>
 
-        <!-- Source: https://github.com/easy-4-java/shiro-biz-spring-boot-starter — easy4j shiro-biz-spring-boot-starter -->
+        <!-- Source: https://github.com/easy-4-java/shiro-extension-spring-boot-starter -->
         <dependency>
             <groupId>io.github.easy4j</groupId>
-            <artifactId>shiro-biz-spring-boot-starter</artifactId>
-            <version>${spring-boot-starter-shiro-biz.version}</version>
+            <artifactId>shiro-extension-spring-boot-starter</artifactId>
+            <version>${shiro-extension-spring-boot-starter.version}</version>
         </dependency>
     </dependencies>
 
