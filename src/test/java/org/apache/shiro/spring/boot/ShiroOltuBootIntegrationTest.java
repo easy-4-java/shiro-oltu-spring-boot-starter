@@ -6,10 +6,9 @@ import org.apache.shiro.authz.permission.PermissionResolver;
 import org.apache.shiro.authz.permission.RolePermissionResolver;
 import org.apache.shiro.event.EventBus;
 import org.apache.shiro.event.support.DefaultEventBus;
-import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.realm.SimpleAccountRealm;
 import org.apache.shiro.spring.boot.utils.JakartaFilterAdapter;
-import org.apache.shiro.spring.web.config.DefaultShiroFilterChainDefinition;
-import org.apache.shiro.spring.web.config.ShiroFilterChainDefinition;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
@@ -24,11 +23,10 @@ class ShiroOltuBootIntegrationTest {
 
     private final WebApplicationContextRunner contextRunner = new WebApplicationContextRunner()
             .withUserConfiguration(Application.class)
-            .withBean(ShiroBizProperties.class, ShiroBizProperties::new)
             .withBean(EventBus.class, DefaultEventBus::new)
-            .withBean(SecurityManager.class, () -> mock(SecurityManager.class))
-            .withBean(ShiroFilterChainDefinition.class, DefaultShiroFilterChainDefinition::new)
-            .withBean(CredentialsMatcher.class, AllowAllCredentialsMatcher::new);
+            .withBean(Realm.class, SimpleAccountRealm::new)
+            .withBean(CredentialsMatcher.class, AllowAllCredentialsMatcher::new)
+            .withPropertyValues("shiro.static-security-manager-enabled=false");
 
     private final WebApplicationContextRunner enabledContext = contextRunner.withPropertyValues("shiro.oltu.enabled=true", "shiro.oltu.client-id=test-client",
                         "shiro.oltu.client-secret=test-secret", "shiro.oltu.state=test-state",
