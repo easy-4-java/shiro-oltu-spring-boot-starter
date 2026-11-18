@@ -191,12 +191,28 @@
             <groupId>win.zqxu.shiro</groupId>
             <artifactId>shiro-oltu-client</artifactId>
             <version>${shiro-oltu.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.shiro</groupId>
+                    <artifactId>shiro-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- https://mvnrepository.com/artifact/win.zqxu.shiro/shiro-oltu-web -->
         <dependency>
             <groupId>win.zqxu.shiro</groupId>
             <artifactId>shiro-oltu-web</artifactId>
             <version>${shiro-oltu.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.shiro</groupId>
+                    <artifactId>shiro-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.shiro</groupId>
+                    <artifactId>shiro-web</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Source: https://github.com/easy-4-java/shiro-extension-spring-boot-starter -->

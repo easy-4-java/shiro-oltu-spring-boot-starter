@@ -1,0 +1,2 @@
+org.apache.shiro.spring.boot.ShiroOltuWebAutoConfiguration
+org.apache.shiro.spring.boot.ShiroOltuWebFilterConfiguration

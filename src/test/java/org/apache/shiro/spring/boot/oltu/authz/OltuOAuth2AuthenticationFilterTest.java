@@ -3,7 +3,9 @@ package org.apache.shiro.spring.boot.oltu.authz;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.spring.boot.oltu.token.OltuOAuth2Token;
+import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.subject.support.SubjectThreadState;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -82,6 +84,72 @@ class OltuOAuth2AuthenticationFilterTest {
 
         boolean result = filter.onAccessDenied(request, response);
         assertThat(result).isFalse();
+    }
+
+
+    @Test
+    void startsLoginForAnAnonymousRequestWithNoCode() throws Exception {
+        Subject subject = mock(Subject.class);
+        Session session = mock(Session.class);
+        when(subject.getSession()).thenReturn(session);
+        OltuOAuth2AuthenticationFilter filter = new OltuOAuth2AuthenticationFilter();
+        filter.setLoginUrl("/login");
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        when(request.getContextPath()).thenReturn("");
+        when(request.getRequestURI()).thenReturn("/secure");
+        when(response.encodeRedirectURL(anyString())).thenAnswer(call -> call.getArgument(0));
+
+        assertThat(dispatch(filter, subject, request, response)).isFalse();
+
+        verify(response).sendRedirect("/login");
+        verify(subject, never()).login(any());
+    }
+
+    @Test
+    void submitsTheCallbackCodeToShiroAndRedirectsOnSuccess() throws Exception {
+        Subject subject = mock(Subject.class);
+        OltuOAuth2AuthenticationFilter filter = new OltuOAuth2AuthenticationFilter();
+        filter.setSuccessUrl("/home");
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        when(request.getContextPath()).thenReturn("");
+        when(request.getParameter("code")).thenReturn("fixture-code");
+        when(response.encodeRedirectURL(anyString())).thenAnswer(call -> call.getArgument(0));
+
+        assertThat(dispatch(filter, subject, request, response)).isFalse();
+
+        verify(subject).login(argThat(token -> token instanceof OltuOAuth2Token oauthToken
+                && "fixture-code".equals(oauthToken.getAuthCode())));
+        verify(response).sendRedirect("/home");
+    }
+
+    @Test
+    void redirectsAnAnonymousUserToTheFailurePageAfterRejection() throws Exception {
+        Subject subject = mock(Subject.class);
+        doThrow(new AuthenticationException("fixture rejection")).when(subject).login(any());
+        OltuOAuth2AuthenticationFilter filter = new OltuOAuth2AuthenticationFilter();
+        filter.setFailureUrl("/error");
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        when(request.getContextPath()).thenReturn("");
+        when(request.getParameter("code")).thenReturn("fixture-code");
+        when(response.encodeRedirectURL(anyString())).thenAnswer(call -> call.getArgument(0));
+
+        assertThat(dispatch(filter, subject, request, response)).isFalse();
+
+        verify(response).sendRedirect("/error");
+    }
+
+    private boolean dispatch(OltuOAuth2AuthenticationFilter filter, Subject subject,
+                             HttpServletRequest request, HttpServletResponse response) throws Exception {
+        SubjectThreadState state = new SubjectThreadState(subject);
+        state.bind();
+        try {
+            return filter.onAccessDenied(request, response);
+        } finally {
+            state.restore();
+        }
     }
 
     @Test
