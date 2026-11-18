@@ -1,6 +1,14 @@
 package org.apache.shiro.spring.boot.oltu.realm;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicReference;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
 import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.spring.boot.oltu.exception.OAuth2AuthenticationException;
@@ -103,4 +111,47 @@ class OltuOAuth2RealmTest {
         realm.setRedirectUrl("http://redirect");
         assertThat(realm).isNotNull();
     }
+    @Test
+    void exchangesAStubAuthorizationCodeAndReadsTheProviderIdentity() throws Exception {
+        HttpServer provider = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        AtomicReference<String> tokenMethod = new AtomicReference<>();
+        AtomicReference<String> userInfoMethod = new AtomicReference<>();
+        provider.createContext("/token", exchange -> {
+            tokenMethod.set(exchange.getRequestMethod());
+            respond(exchange, "application/json", "{\"access_token\":\"fixture-token\",\"expires_in\":60}");
+        });
+        provider.createContext("/user", exchange -> {
+            userInfoMethod.set(exchange.getRequestMethod());
+            respond(exchange, "text/plain", "fixture-user");
+        });
+        provider.start();
+
+        try {
+            String endpoint = "http://127.0.0.1:" + provider.getAddress().getPort();
+            OltuOAuth2Realm realm = new OltuOAuth2Realm();
+            realm.setAccessTokenUrl(endpoint + "/token");
+            realm.setUserInfoUrl(endpoint + "/user");
+            realm.setClientId("fixture-client");
+            realm.setClientSecret("fixture-secret");
+            realm.setRedirectUrl("https://application.example.test/callback");
+
+            AuthenticationInfo result = realm.doGetAuthenticationInfo(new OltuOAuth2Token("fixture-code"));
+
+            assertThat(result.getPrincipals().getPrimaryPrincipal()).isEqualTo("fixture-user");
+            assertThat(tokenMethod.get()).isEqualTo("POST");
+            assertThat(userInfoMethod.get()).isEqualTo("GET");
+        } finally {
+            provider.stop(0);
+        }
+    }
+
+    private void respond(HttpExchange exchange, String contentType, String body) throws IOException {
+        byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+        try (exchange) {
+            exchange.getResponseHeaders().set("Content-Type", contentType);
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+        }
+    }
+
 }

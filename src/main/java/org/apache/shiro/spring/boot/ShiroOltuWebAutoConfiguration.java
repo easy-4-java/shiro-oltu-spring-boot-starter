@@ -1,5 +1,7 @@
 package org.apache.shiro.spring.boot;
 
+import java.util.Objects;
+
 import org.apache.shiro.authc.credential.CredentialsMatcher;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.web.config.AbstractShiroWebConfiguration;
@@ -59,8 +61,12 @@ public class ShiroOltuWebAutoConfiguration extends AbstractShiroWebConfiguration
 		oauthRealm.setDefaultPermissions(oltuProperties.getDefaultPermissions());
 		oauthRealm.setDefaultRoles(oltuProperties.getDefaultRoles());
 
-		oauthRealm.setPermissionResolver(permissionResolver);
-		oauthRealm.setRolePermissionResolver(rolePermissionResolver);
+        if (Objects.nonNull(permissionResolver)) {
+            oauthRealm.setPermissionResolver(permissionResolver);
+        }
+        if (Objects.nonNull(rolePermissionResolver)) {
+            oauthRealm.setRolePermissionResolver(rolePermissionResolver);
+        }
 		
 		return oauthRealm;
 	}
